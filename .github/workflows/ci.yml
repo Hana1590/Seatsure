@@ -1,0 +1,51 @@
+
+# Continues Integration, important than implementation
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # .NET 9 SDK is required for the `dotnet` CLI to build the .slnx solution
+      # format (SDK >= 9.0.200); 8.0.x is installed alongside for completeness.
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      # No packages.lock.json in the repo, so key the cache on the project files.
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore Seatsure.slnx
+
+      - name: Build
+        run: dotnet build Seatsure.slnx -c Release --no-restore
+
+      # No test project exists yet; this is a no-op today and automatically
+      # runs the xUnit suite once it is added to the solution.
+      - name: Test
+        run: dotnet test Seatsure.slnx -c Release --no-build --verbosity normal

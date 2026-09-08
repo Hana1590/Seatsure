@@ -1,0 +1,35 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly, Monday 04:37 UTC (off-peak, non-:00 minute).
+    - cron: "37 4 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  trivy:
+    name: Trivy filesystem scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Scans dependencies for known CVEs and the tree for committed secrets.
+      # Gates on CRITICAL/HIGH; ignore-unfixed keeps the vuln gate to actionable
+      # findings, while secret findings always fail the job.
+      - name: Trivy scan (vulnerabilities + secrets)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+          format: table

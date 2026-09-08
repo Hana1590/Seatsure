@@ -1,0 +1,6 @@
+@Seatsure_HostAddress = http://localhost:5149
+
+GET {{Seatsure_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

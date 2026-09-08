@@ -1,0 +1,9 @@
+**/obj/
+.claude/
+CLAUDE.md
+docs/
+.vs/
+**/bin/
+scratchpad/
+*.user
+N-tier arch
